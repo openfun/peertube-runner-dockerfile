@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# The container user (see USER in the Dockerfile) is an un-privileged user that
+# does not exist and is not created during the build phase (see Dockerfile).
+# Hence, we use this entrypoint to wrap commands that will be run in the
+# container to create an entry for this user in the /etc/passwd file.
+#
+# The following environment variables may be passed to the container to
+# customize running user account:
+#
+#   * USER_NAME: container user name (default: default)
+#   * HOME     : container user home directory (default: none)
+#
+# To pass environment variables, you can either use the -e option of the docker run command:
+#
+#     docker run --rm -e USER_NAME=foo -e HOME='/home/foo' peertube-runner:latest peertube-runner server
+#
+#
+
+echo "🐳(entrypoint) creating user running in the container..."
+if ! whoami > /dev/null 2>&1; then
+  if [ -w /etc/passwd ]; then
+    echo "${USER_NAME:-default}:x:$(id -u):$(id -g):${USER_NAME:-default} user:${HOME}:/sbin/nologin" >> /etc/passwd
+  fi
+fi
+
+# Generat TOML file to run peertube-runner
+CONFIG_DIRECTORY=~/.config/peertube-runner-nodejs/default
+mkdir -p "$CONFIG_DIRECTORY"
+CONFIG_FILE="$CONFIG_DIRECTORY"/config.toml
+
+cat > $CONFIG_FILE <<EOF
+[jobs]
+concurrency = ${PEERTUBE_RUNNER_JOBS_CONCURRENCY:-2}
+
+[ffmpeg]
+threads = ${PEERTUBE_RUNNER_FFMPEF_THREADS:-2}
+nice = ${PEERTUBE_RUNNER_FFMPEG_NICE:-0}
+EOF
+
+if [ -n "$PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL" ]
+then
+    cat >> $CONFIG_FILE <<EOF
+[[registeredInstances]]
+url = "$PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL"
+runnerToken = "$PEERTUBE_RUNNER_REGISTERED_INSTANCE_RUNNER_TOKEN"
+runnerName = "$PEERTUBE_RUNNER_REGISTERED_INSTANCE_RUNNER_NAME"
+EOF
+fi
+
+# Run command used as argument
+echo "🐳(entrypoint) running your command: ${*}"
+exec "$@"
