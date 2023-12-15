@@ -1,0 +1,16 @@
+# Peertube runner
+
+peertube_runner_image_name: "fundocker/peertube-runner"
+peertube_runner_image_tag: "latest"
+peertube_runner_replicas: 1
+peertube_runner_jobs_concurrency: 2
+peertube_runner_ffmpeg_threads: 2
+peertube_runner_ffmpeg_nice: 0
+peertube_runner_secret_name: "peertuberunner-{{ peertuberunner_vault_checksum | default('undefined_peertuberunner_vault_checksum') }}"
+
+
+
+peertube_runner_app_resources:
+  requests:
+    cpu: 50m
+    memory: 500Mi

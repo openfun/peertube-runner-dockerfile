@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  labels:
+    app: peertuberunner
+    service: app
+    version: "{{ peertube_runner_image_tag }}"
+  name: "peertuberunner-app"
+  namespace: "{{ namespace_name }}"
+spec:
+  replicas: {{ peertube_runner_replicas }}
+  selector:
+    matchLabels:
+      app: peertuberunner
+      service: app
+      version: "{{ peertube_runner_image_tag }}"
+      deployment: "peertuberunner-app"
+  template:
+    metadata:
+      labels:
+        app: peertuberunner
+        service: app
+        version: "{{ peertube_runner_image_tag }}"
+        deployment: "peertuberunner-app"
+    spec:
+      # Prefer running pods on different nodes for redundancy
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: deployment
+                      operator: In
+                      values:
+                        - "peertuberunner-app"
+                topologyKey: kubernetes.io/hostname
+{% set image_pull_secret_name = peertube_runner_image_pull_secret_name | default(none) or default_image_pull_secret_name %}
+{% if image_pull_secret_name is not none %}
+      imagePullSecrets:
+        - name: "{{ image_pull_secret_name }}"
+{% endif %}
+      containers:
+        - name: peertuberunner
+          image: "{{ peertube_runner_image_name }}:{{ peertube_runner_image_tag }}"
+          imagePullPolicy: Always
+          livenessProbe:
+            exec:
+              command: ["/bin/bash", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL"]
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          env:
+            - name: PEERTUBE_RUNNER_JOBS_CONCURRENCY
+              value: "{{ peertube_runner_jobs_concurrency }}"
+            - name: PEERTUBE_RUNNER_FFMPEF_THREADS
+              value: "{{ peertube_runner_ffmpeg_threads }}"
+            - name: PEERTUBE_RUNNER_FFMPEG_NICE
+              value: "{{ peertube_runner_ffmpeg_nice }}"
+            - name: DOCKER_USER
+              value: node
+            - name: HOME
+              value: /home/node
+          envFrom:
+            - secretRef:
+                name: "{{ peertube_runner_secret_name }}"
+          resources: {{ peertube_runner_app_resources }}
+          volumeMounts:
+            - mountPath: /home/node
+              name: peertube-config
+      securityContext:
+        runAsUser: {{ container_uid }}
+        runAsGroup: {{ container_gid }}
+      volumes:
+        - name: peertube-config
+          emptyDir: {}  # volume that lives as long as the pod lives
