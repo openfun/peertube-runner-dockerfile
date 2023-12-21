@@ -50,11 +50,13 @@ spec:
               command: ["/bin/bash", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL"]
             initialDelaySeconds: 60
             periodSeconds: 30
+            timeoutSeconds: 10
           readinessProbe:
             exec:
               command: ["sh", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL"]
             initialDelaySeconds: 10
             periodSeconds: 5
+            timeoutSeconds: 5
           env:
             - name: PEERTUBE_RUNNER_JOBS_CONCURRENCY
               value: "{{ peertube_runner_jobs_concurrency }}"
