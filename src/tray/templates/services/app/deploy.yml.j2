@@ -13,14 +13,12 @@ spec:
     matchLabels:
       app: peertuberunner
       service: app
-      version: "{{ peertube_runner_image_tag }}"
       deployment: "peertuberunner-app"
   template:
     metadata:
       labels:
         app: peertuberunner
         service: app
-        version: "{{ peertube_runner_image_tag }}"
         deployment: "peertuberunner-app"
     spec:
       # Prefer running pods on different nodes for redundancy
