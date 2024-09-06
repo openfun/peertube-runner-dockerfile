@@ -7,6 +7,10 @@ The generated image should be run as an Un-privileged user.
 
 To build the image, run `make build`. The `build` task generates an image with the tag `peertube-runner:latest`.
 
+To build the image with the [whisper-ctranslate2](https://pypi.org/project/whisper-ctranslate2/#description) for translation run
+`make build-whisper_ctranslate2`. This will build image with the tag
+`peertube-runner:latest-whisper_ctranslate2`.
+
 ## Configuration
 
 The `peertube-runner` instance can be configured using environment variable. The following environment variables
@@ -18,6 +22,19 @@ can be used :
 - `PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL`: A registered instance url. Default: `none`
 - `PEERTUBE_RUNNER_REGISTERED_INSTANCE_RUNNER_TOKEN`: A registered instance runner token. Default: `none`
 - `PEERTUBE_RUNNER_REGISTERED_INSTANCE_RUNNER_NAME`: A registered instance runner name. Default: `none`
+- `PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE`: The transcription engine to use.
+Default: `none`
+- `PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE_PATH`: The path to the transcription
+engine. Default: `none`
+- `PEERTUBE_RUNNER_TRANSCRIPTION_MODEL`: The model to use for the transcription.
+Default: `none`
+
+### whisper-ctranslate2
+
+For the image build with whisper-ctranslate2 the default value change for:
+- `PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE` default to `whisper-ctranslate2`
+- `PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE_PATH` default to `/usr/local/bin/whisper-ctranslate2`
+- `PEERTUBE_RUNNER_TRANSCRIPTION_MODEL` default to `tiny`
 
 ## Run
 

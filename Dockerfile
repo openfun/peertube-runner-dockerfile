@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:20-slim AS runner
 
 # Install FFMPEG
 RUN apt update && \
@@ -16,3 +16,23 @@ USER ${DOCKER_USER}
 
 ENTRYPOINT [ "entrypoint" ]
 CMD [ "peertube-runner", "server" ]
+
+FROM runner AS whisper_ctranslate2
+
+USER root:root
+
+RUN apt-get update && \
+    apt install -y python3-pip && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install whisper-ctranslate2==0.4.5 --break-system-packages
+
+# Un-privileged user running the application
+ARG DOCKER_USER
+USER ${DOCKER_USER}
+
+ENV PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE="whisper-ctranslate2"
+
+ENV PEERTUBE_RUNNER_TRANSCRIPTION_MODEL="tiny"
+
+ENV PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE_PATH="/usr/local/bin/whisper-ctranslate2"

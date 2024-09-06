@@ -12,9 +12,13 @@ DOCKER_USER          = $(DOCKER_UID):$(DOCKER_GID)
 
 default: h
 
-build: # build peertube-runner image
-	docker buildx build --build-arg DOCKER_USER=$(DOCKER_USER)  -t peertube-runner:latest .
+build: ## Build peertube-runner image
+	docker buildx build --build-arg DOCKER_USER=$(DOCKER_USER) --target runner -t peertube-runner:latest .
 .PHONY:build
+
+build-whisper_ctranslate2: ## Build peertube-runner image with whisper-ctranslate2
+	docker buildx build --build-arg DOCKER_USER=$(DOCKER_USER) --target whisper_ctranslate2 -t peertube-runner:latest-whisper_ctranslate2 .
+.PHONY:build-whisper_ctranslate2
 
 h: # short default help task
 	@echo "$(BOLD)Marsha Makefile$(RESET)"

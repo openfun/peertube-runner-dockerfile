@@ -38,15 +38,30 @@ threads = ${PEERTUBE_RUNNER_FFMPEF_THREADS:-2}
 nice = ${PEERTUBE_RUNNER_FFMPEG_NICE:-0}
 EOF
 
+if [ -n "$PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE" ]
+then
+    cat >> $CONFIG_FILE <<EOF
+
+[transcription]
+engine = "$PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE"
+enginePath = "$PEERTUBE_RUNNER_TRANSCRIPTION_ENGINE_PATH"
+model = "$PEERTUBE_RUNNER_TRANSCRIPTION_MODEL"
+EOF
+fi
+
 if [ -n "$PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL" ]
 then
     cat >> $CONFIG_FILE <<EOF
+
 [[registeredInstances]]
 url = "$PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL"
 runnerToken = "$PEERTUBE_RUNNER_REGISTERED_INSTANCE_RUNNER_TOKEN"
 runnerName = "$PEERTUBE_RUNNER_REGISTERED_INSTANCE_RUNNER_NAME"
+
 EOF
 fi
+
+
 
 # Run command used as argument
 echo "🐳(entrypoint) running your command: ${*}"
