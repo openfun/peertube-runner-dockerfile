@@ -1,25 +1,28 @@
+{% for peertube_runner in peertube_runners %}
+{% set runner_dashed_name = peertube_runner.name | replace('_', '-') %}
+---
 apiVersion: v1
 kind: Deployment
 metadata:
   labels:
     app: peertuberunner
-    service: app
+    service: "app-{{ runner_dashed_name }}"
     version: "{{ peertube_runner_image_tag }}"
-  name: "peertuberunner-app"
+  name: "peertuberunner-app-{{ runner_dashed_name }}"
   namespace: "{{ namespace_name }}"
 spec:
-  replicas: {{ peertube_runner_replicas }}
+  replicas: 1
   selector:
     matchLabels:
       app: peertuberunner
-      service: app
-      deployment: "peertuberunner-app"
+      service: "app-{{ runner_dashed_name }}"
+      deployment: "peertuberunner-app-{{ runner_dashed_name }}"
   template:
     metadata:
       labels:
         app: peertuberunner
-        service: app
-        deployment: "peertuberunner-app"
+        service: "app-{{ runner_dashed_name }}"
+        deployment: "peertuberunner-app-{{ runner_dashed_name }}"
     spec:
       # Prefer running pods on different nodes for redundancy
       affinity:
@@ -32,7 +35,7 @@ spec:
                     - key: deployment
                       operator: In
                       values:
-                        - "peertuberunner-app"
+                        - "peertuberunner-app-{{ runner_dashed_name }}"
                 topologyKey: kubernetes.io/hostname
 {% set image_pull_secret_name = peertube_runner_image_pull_secret_name | default(none) or default_image_pull_secret_name %}
 {% if image_pull_secret_name is not none %}
@@ -45,25 +48,27 @@ spec:
           imagePullPolicy: Always
           livenessProbe:
             exec:
-              command: ["/bin/bash", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL"]
+              command: ["/bin/bash", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_{{ peertube_runner.name }}_REGISTERED_INSTANCE_URL"]
             initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 10
           readinessProbe:
             exec:
-              command: ["sh", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_REGISTERED_INSTANCE_URL"]
+              command: ["sh", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_{{ peertube_runner.name }}_REGISTERED_INSTANCE_URL"]
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 5
           env:
             - name: PEERTUBE_RUNNER_JOBS_CONCURRENCY
-              value: "{{ peertube_runner_jobs_concurrency }}"
+              value: "{{ peertube_runner.jobs_concurrency }}"
             - name: PEERTUBE_RUNNER_FFMPEF_THREADS
-              value: "{{ peertube_runner_ffmpeg_threads }}"
+              value: "{{ peertube_runner.ffmpeg_threads }}"
             - name: PEERTUBE_RUNNER_FFMPEG_NICE
-              value: "{{ peertube_runner_ffmpeg_nice }}"
+              value: "{{ peertube_runner.ffmpeg_nice }}"
             - name: PEERTUBE_RUNNER_TRANSCRIPTION_MODEL
-              value: "{{ peertube_runner_transcription_model }}"
+              value: "{{ peertube_runner.transcription_model }}"
+            - name: PEERTUBE_RUNNER_REGISTERED_INSTANCE_RUNNER_NAME
+              value: "{{ peertube_runner.name }}"
             - name: DOCKER_USER
               value: node
             - name: HOME
@@ -81,3 +86,5 @@ spec:
       volumes:
         - name: peertube-config
           emptyDir: {}  # volume that lives as long as the pod lives
+
+{% endfor %}

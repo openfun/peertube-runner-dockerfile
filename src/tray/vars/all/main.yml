@@ -2,12 +2,14 @@
 
 peertube_runner_image_name: "fundocker/peertube-runner"
 peertube_runner_image_tag: "latest"
-peertube_runner_replicas: 1
-peertube_runner_jobs_concurrency: 2
-peertube_runner_ffmpeg_threads: 2
-peertube_runner_ffmpeg_nice: 0
 peertube_runner_secret_name: "peertuberunner-{{ peertuberunner_vault_checksum | default('undefined_peertuberunner_vault_checksum') }}"
-peertube_runner_transcription_model: "tiny"
+
+peertube_runners:
+  - concurrency: 2
+    ffmpeg_threads: 2
+    ffmpeg_nice: 0
+    transcription_model: "tiny"
+    name: "runner_app"
 
 
 peertube_runner_app_resources:
