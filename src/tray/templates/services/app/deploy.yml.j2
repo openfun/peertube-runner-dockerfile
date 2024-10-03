@@ -46,6 +46,15 @@ spec:
         - name: peertuberunner
           image: "{{ peertube_runner_image_name }}:{{ peertube_runner_image_tag }}"
           imagePullPolicy: Always
+{% if peertube_runner.enable_job is defined %}
+          args:
+            - peertube-runner
+            - server
+{% for enable_job in peertube_runner.enable_job %}
+            - --enable-job
+            - {{ enable_job }}
+{% endfor %}
+{% endif %}
           livenessProbe:
             exec:
               command: ["/bin/bash", "-c", "peertube-runner list-registered | grep $PEERTUBE_RUNNER_{{ peertube_runner.name }}_REGISTERED_INSTANCE_URL"]
