@@ -10,6 +10,10 @@ peertube_runners:
     ffmpeg_nice: 0
     transcription_model: "tiny"
     name: "runner_app"
+    enable_job:
+      - vod-web-video-transcoding
+      - vod-hls-transcoding
+      - vod-audio-merge-transcoding
 
 
 peertube_runner_app_resources:
