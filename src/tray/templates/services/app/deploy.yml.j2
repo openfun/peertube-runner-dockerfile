@@ -85,7 +85,7 @@ spec:
           envFrom:
             - secretRef:
                 name: "{{ peertube_runner_secret_name }}"
-          resources: {{ peertube_runner_app_resources }}
+          resources: {{ peertube_runner.app_resources }}
           volumeMounts:
             - mountPath: /home/node
               name: peertube-config
