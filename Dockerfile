@@ -25,7 +25,7 @@ RUN apt-get update && \
     apt install -y python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install whisper-ctranslate2==0.4.5 --break-system-packages
+RUN pip3 install whisper-ctranslate2==0.4.6 --break-system-packages
 
 # Un-privileged user running the application
 ARG DOCKER_USER
