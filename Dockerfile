@@ -8,7 +8,7 @@ RUN apt update && \
 COPY files/usr/local/bin/entrypoint /usr/local/bin/entrypoint
 
 # Install peertube-runner
-RUN npm install -g @peertube/peertube-runner@${PEERTUBE_RUNNER_VERSION:-"0.0.17"}
+RUN npm install -g @peertube/peertube-runner@${PEERTUBE_RUNNER_VERSION:-"0.0.22"}
 
 # Un-privileged user running the application
 ARG DOCKER_USER
